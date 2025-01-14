@@ -1,3 +1,7 @@
+```diff
+- This is a fork to implement boundary conditions and a spin ladder unit cell.
+```
+
 # StochasticSeriesExpansion
 [![Docs dev](https://img.shields.io/badge/docs-latest-blue.svg)](https://lukas.weber.science/StochasticSeriesExpansion.jl/dev/)
 [![Docs stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://lukas.weber.science/StochasticSeriesExpansion.jl/stable/)
