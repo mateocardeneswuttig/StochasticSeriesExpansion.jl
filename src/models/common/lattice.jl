@@ -196,6 +196,7 @@ From the job file, lattices are specified using a `lattice` parameter.
 tm.lattice = (
     unitcell = StochasticSeriesExpansion.UnitCells.honeycomb,
     size = (10,10),
+    openbcs = (false, false) #added this line
 )
 ```
 The `unitcell` should be an instance of [`UnitCell`](@ref) and `size` specifies how many copies of the unit cell in each dimension make up the supercell. The above example creates a honeycomb lattice with ``2\times 10\times 10`` sites.
@@ -230,14 +231,14 @@ function Lattice(uc::UnitCell{D}, Ls::NTuple{D,<:Integer}, openbcs::NTuple{D,<:B
             @assert 1 <= b.iuc <= length(uc.sites)
             @assert 1 <= b.juc <= length(uc.sites)
 
-            # DOES THIS WORK??
-            for openbc, current_r, current_L in zip(openbcs,r,Ls)
-                if openbc && current_r == current_L
+            # Check if openbcs = [openbc_x, openbc_y, openbc_z, ...] is true at current index r_i for i = x,y,...
+            # and if so, skip bond if bond is going over the boundary (r_i + b_i > L_i)
+            for (openbc_i, r_i, b_i, L_i) in zip(openbcs,r,b.jd,Ls)
+                if openbc_i && r_i + b_i > L_i 
                     @goto skip_bond
                 end
             end
 
-            # If no openbc are present at current index, add bond
             i = join_idx(dims, (b.iuc, r...))
             j = join_idx(dims, (b.juc, ((r .+ b.jd .- 1) .% Ls .+ 1)...))
 
@@ -298,7 +299,7 @@ const square = UnitCell(
 )
 
 # added on January 21
-const coupled_spinladders= UnitCell(
+const coupled_spinladders = UnitCell(
     [2.0 0.0; 0.0 1.0],
     [UCSite((0.0, 0.0)), UCSite((0.5, 0.0))],
     [
