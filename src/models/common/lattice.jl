@@ -210,6 +210,7 @@ The `unitcell` should be an instance of [`UnitCell`](@ref) and `size` specifies 
 struct Lattice{D}
     uc::UnitCell{D}
     Ls::NTuple{D,Int}
+    bcs::NTuple{D,Bool}
 
     bonds::Vector{LatticeBond}
     sites::Vector{LatticeSite{D}}
@@ -218,9 +219,9 @@ end
 dimension(lat::Lattice{D}) where {D} = D
 dimension(unitcell::UnitCell{D}) where {D} = D
 
-Lattice(params::Union{NamedTuple,AbstractDict}) = Lattice(params.unitcell, params.size)
+Lattice(params::Union{NamedTuple,AbstractDict}) = Lattice(params.unitcell, params.size, params.openbc) #added open bc as parameters to lattice (default is false)
 
-function Lattice(uc::UnitCell{D}, Ls::NTuple{D,<:Integer}) where {D}
+function Lattice(uc::UnitCell{D}, Ls::NTuple{D,<:Integer}, openbcs::NTuple{D,<:Bool}) where {D}
     dims = (length(uc.sites), Ls...)
     bonds = LatticeBond[]
     sites = LatticeSite[]
@@ -229,10 +230,20 @@ function Lattice(uc::UnitCell{D}, Ls::NTuple{D,<:Integer}) where {D}
             @assert 1 <= b.iuc <= length(uc.sites)
             @assert 1 <= b.juc <= length(uc.sites)
 
+            # DOES THIS WORK??
+            for openbc, current_r, current_L in zip(openbcs,r,Ls)
+                if openbc && current_r == current_L
+                    @goto skip_bond
+                end
+            end
+
+            # If no openbc are present at current index, add bond
             i = join_idx(dims, (b.iuc, r...))
             j = join_idx(dims, (b.juc, ((r .+ b.jd .- 1) .% Ls .+ 1)...))
 
             push!(bonds, LatticeBond(bond_type, i, j))
+            
+            @label skip_bond
         end
         for (iuc, uc_site) in enumerate(uc.sites)
             push!(sites, LatticeSite(iuc, r))
@@ -284,6 +295,18 @@ const square = UnitCell(
     [1.0 0.0; 0.0 1.0],
     [UCSite((0.0, 0.0))],
     [UCBond(1, (0, 1), 1), UCBond(1, (1, 0), 1)],
+)
+
+# added on January 21
+const coupled_spinladders= UnitCell(
+    [2.0 0.0; 0.0 1.0],
+    [UCSite((0.0, 0.0)), UCSite((0.5, 0.0))],
+    [
+        UCBond(1, (0, 0), 2),
+        UCBond(1, (0, 1), 2),
+        UCBond(2, (0, 1), 2),
+        UCBond(2, (1, 0), 1),
+    ],
 )
 
 const columnar_dimer = UnitCell(
