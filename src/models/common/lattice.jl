@@ -222,7 +222,7 @@ dimension(unitcell::UnitCell{D}) where {D} = D
 
 Lattice(params::Union{NamedTuple,AbstractDict}) = Lattice(params.unitcell, params.size, params.openbc) #added open bc as parameters to lattice (default is false)
 
-function Lattice(uc::UnitCell{D}, Ls::NTuple{D,<:Integer}, openbcs::NTuple{D,<:Bool}) where {D}
+function Lattice(uc::UnitCell{D}, Ls::NTuple{D,<:Integer}, openbcs::NTuple{D,<:Bool} = ntuple(_ -> false, D)) where {D}
     dims = (length(uc.sites), Ls...)
     bonds = LatticeBond[]
     sites = LatticeSite[]
