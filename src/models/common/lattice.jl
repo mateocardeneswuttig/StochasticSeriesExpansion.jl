@@ -211,7 +211,7 @@ The `unitcell` should be an instance of [`UnitCell`](@ref) and `size` specifies 
 struct Lattice{D}
     uc::UnitCell{D}
     Ls::NTuple{D,Int}
-    bcs::NTuple{D,Bool}
+    openbcs::NTuple{D,Bool}
 
     bonds::Vector{LatticeBond}
     sites::Vector{LatticeSite{D}}
@@ -220,7 +220,7 @@ end
 dimension(lat::Lattice{D}) where {D} = D
 dimension(unitcell::UnitCell{D}) where {D} = D
 
-Lattice(params::Union{NamedTuple,AbstractDict}) = Lattice(params.unitcell, params.size, params.openbc) #added open bc as parameters to lattice (default is false)
+Lattice(params::Union{NamedTuple,AbstractDict}) = Lattice(params.unitcell, params.size, params.openbcs) #added openbcs as parameters to lattice (default is false, i.e., periodic bc in every dimension)
 
 function Lattice(uc::UnitCell{D}, Ls::NTuple{D,<:Integer}, openbcs::NTuple{D,<:Bool} = ntuple(_ -> false, D)) where {D}
     dims = (length(uc.sites), Ls...)
@@ -251,7 +251,7 @@ function Lattice(uc::UnitCell{D}, Ls::NTuple{D,<:Integer}, openbcs::NTuple{D,<:B
         end
     end
 
-    return Lattice{D}(uc, Ls, bonds, sites)
+    return Lattice{D}(uc, Ls, openbcs, bonds, sites)
 end
 
 function split_idx(l::Lattice, site_idx::Integer)
